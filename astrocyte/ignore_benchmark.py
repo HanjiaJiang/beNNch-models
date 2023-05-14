@@ -132,7 +132,7 @@ syn_params = {
 
 astrocyte_model = "ignore_and_sic"
 astrocyte_params = {
-    "SIC": 5.0,
+    "SIC": 4.5,
     }
 
 ###############################################################################
@@ -224,7 +224,7 @@ def build_network():
                           'rng_seed': params['rng_seed'],
                           'overwrite_files': True})
 
-    nest.print_time = True
+    nest.print_time = False
     nest.overwrite_files = True
 
     e, i, a, n = create_astro_network(scale=params['scale'])

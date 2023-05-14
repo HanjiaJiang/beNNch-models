@@ -226,7 +226,7 @@ def build_network():
                           'rng_seed': params['rng_seed'],
                           'overwrite_files': True})
 
-    nest.print_time = True
+    nest.print_time = False
     nest.overwrite_files = True
 
     e, i, a, n = create_astro_network(scale=params['scale'])
