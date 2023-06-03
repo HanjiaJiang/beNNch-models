@@ -132,7 +132,7 @@ syn_params = {
 
 astrocyte_model = "ignore_and_sic"
 astrocyte_params = {
-    "SIC": 4.5,
+    "SIC": 1.0,
     }
 
 ###############################################################################

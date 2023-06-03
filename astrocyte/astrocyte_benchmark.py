@@ -110,30 +110,29 @@ network_params = {
     "N_in": 2000,  # number of inhibitory neurons
     "N_astro": 10000,  # number of astrocytes
     "p": 0.1,  # neuron-neuron connection probability.
-    "p_syn_astro": 1.0,  # synapse-astrocyte pairing probability
+    "p_syn_astro": 0.5,  # synapse-astrocyte pairing probability
     "max_astro_per_target": 10,  # max number of astrocytes per target neuron
     "astro_pool_by_index": False,  # Astrocyte pool selection by index
     "poisson_rate": 2000,  # rate of Poisson input
-    "Nrec": 250,
     }
 
 syn_params = {
     "synapse_model": "tsodyks_synapse",  # model of neuron-to-neuron and neuron-to-astrocyte connections
     "astro2post": "sic_connection",  # model of astrocyte-to-neuron connection
-    "w_a2n": 1.0,  # weight of astrocyte-to-neuron connection
+    "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
     "w_e": 1.0,  # weight of excitatory connection in nS
     "w_i": -4.0,  # weight of inhibitory connection in nS
     "d_e": 2.0,  # delay of excitatory connection in ms
-    "d_i": 1.0,  # delay of inhibitory connection in ms
+    "d_i": 2.0,  # delay of inhibitory connection in ms
     }
 
 ###############################################################################
 # Astrocyte parameters.
 
-astrocyte_model = "astrocyte"
+astrocyte_model = "astrocyte_lr_1994"
 astrocyte_params = {
     'IP3': 0.4,  # IP3 initial value in uM
-    'incr_IP3': 0.2,  # Step increase in IP3 concentration with each unit synaptic weight received by the astrocyte in uM
+    'incr_IP3': 0.5,  # Step increase in IP3 concentration with each unit synaptic weight received by the astrocyte in uM
     'tau_IP3': 2.0,  # Time constant of astrocytic IP3 degradation in ms
     }
 
@@ -142,7 +141,7 @@ astrocyte_params = {
 
 neuron_model = "aeif_cond_alpha_astro"
 tau_syn_ex = 2.0
-tau_syn_in = 4.0
+tau_syn_in = 2.0
 
 neuron_params_ex = {
     "tau_syn_ex": tau_syn_ex, # excitatory synaptic time constant in ms
@@ -188,7 +187,7 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         "rule": "pairwise_bernoulli_astro",
         "astrocyte": nodes_astro,
         "p": network_params["p"]/scale,
-        "p_syn_astro": network_params["p_syn_astro"]/scale,
+        "p_syn_astro": network_params["p_syn_astro"],
         "max_astro_per_target": network_params["max_astro_per_target"],
         "astro_pool_by_index": network_params["astro_pool_by_index"],
         }
