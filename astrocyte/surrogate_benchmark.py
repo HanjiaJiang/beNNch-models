@@ -1,9 +1,9 @@
 """
-Random balanced network with astrocyte_lr_1994 for HPC benchmark
+Random balanced network with astrocyte_surrogate for HPC benchmark
 ------------------------------------------------------------------
 
 This script creates and simulates random balanced network with the
-astrocyte_lr_1994 model. This script is used for HPC benchmarks.
+astrocyte_surrogate model. This script is used for HPC benchmarks.
 
 """
 
@@ -60,14 +60,12 @@ syn_params = {
 }
 
 ###############################################################################
-# Set astrocyte parameters.
+# Astrocyte parameters.
 
-astrocyte_model = "astrocyte_lr_1994"
+astrocyte_model = "astrocyte_surrogate"
 astrocyte_params = {
-    "IP3": 0.4,  # IP3 initial value in µM
-    "delta_IP3": 0.5,  # Parameter determining the increase in astrocytic IP3 concentration induced by synaptic input
-    "tau_IP3": 2.0,  # Time constant of the exponential decay of astrocytic IP3
-}
+    'SIC': 0.5,
+    }
 
 ###############################################################################
 # Set neuron parameters.
@@ -147,6 +145,7 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         "delay": syn_params["d_i"],
     }
     nest.Connect(nodes_in, nodes_ex + nodes_in, conn_params_i, syn_params_i)
+
 
 
 def build_network():
