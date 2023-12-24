@@ -1,9 +1,9 @@
 """
-Random balanced network with astrocyte_surrogate for HPC benchmark
+Random balanced network with astrocyte_lr_1994 for HPC benchmark
 ------------------------------------------------------------------
 
 This script creates and simulates random balanced network with the
-astrocyte_surrogate model. This script is used for HPC benchmarks.
+astrocyte_lr_1994 model. This script is used for HPC benchmarks.
 
 """
 
@@ -40,6 +40,8 @@ params = {
 ###############################################################################
 # Set network parameters.
 
+model = "burst"
+
 network_params = {
     "N_ex": 8000,  # number of excitatory neurons
     "N_in": 2000,  # number of inhibitory neurons
@@ -56,23 +58,23 @@ syn_params = {
     "w_e": 1.0,  # weight of excitatory connection in nS
     "w_i": -4.0,  # weight of inhibitory connection in nS
     "d_e": 2.0,  # delay of excitatory connection in ms
-    "d_i": 2.0,  # delay of inhibitory connection in ms
+    "d_i": 1.0 if model == "sparse" else 2.0,  # delay of inhibitory connection in ms
 }
 
 ###############################################################################
-# Astrocyte parameters.
+# Set astrocyte parameters.
 
 astrocyte_model = "astrocyte_surrogate"
 astrocyte_params = {
-    'SIC': 0.5,
-    }
+    "SIC": 0.5
+}
 
 ###############################################################################
 # Set neuron parameters.
 
 neuron_model = "aeif_cond_alpha_astro"
 tau_syn_ex = 2.0
-tau_syn_in = 2.0
+tau_syn_in = 4.0 if model == "sparse" else 2.0
 
 neuron_params_ex = {
     "tau_syn_ex": tau_syn_ex,  # excitatory synaptic time constant in ms
@@ -147,7 +149,6 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
     nest.Connect(nodes_in, nodes_ex + nodes_in, conn_params_i, syn_params_i)
 
 
-
 def build_network():
     """Builds the network including setting of simulation and neuron
     parameters, creation of neurons and connections
@@ -159,15 +160,15 @@ def build_network():
     nest.SetKernelStatus({'total_num_virtual_procs': params['nvp'],
                           'resolution': params['dt'],
                           'rng_seed': params['rng_seed'],
-                          'overwrite_files': True})
+                          'overwrite_files': True,
+                          'spike_buffer_shrink_limit': 0.2})
 
     nest.print_time = False
     nest.overwrite_files = True
 
     e, i, a, n = create_astro_network(scale=params['scale'])
 
-    nest.message(M_INFO, 'build_network',
-                 'Creating excitatory spike recorder.')
+    nest.message(M_INFO, 'build_network', 'Creating excitatory spike recorder.')
 
     if params['record_spikes']:
         recorder_label = os.path.join(
@@ -180,44 +181,45 @@ def build_network():
 
 
     BuildNodeTime = time.time() - tic
-    node_memory = str(memory_thisjob())
+#    node_memory = str(memory_thisjob())
 
     tic = time.time()
 
-    connect_astro_network(e, i, a, n)
+    connect_astro_network(e, i, a, n, scale=params['scale'])
 
-    E_neurons = e
-    if params['record_spikes']:
-        if params['nvp'] != 1:
-            local_neurons = nest.GetLocalNodeCollection(E_neurons)
-            # GetLocalNodeCollection returns a stepped composite NodeCollection, which
-            # cannot be sliced. In order to allow slicing it later on, we're creating a
-            # new regular NodeCollection from the plain node IDs.
-            local_neurons = nest.NodeCollection(local_neurons.tolist())
-        else:
-            local_neurons = E_neurons
-
-        if len(local_neurons) < network_params['Nrec']:
-            network_params['Nrec'] = len(local_neurons)
-            #nest.message(
-            #    M_ERROR, 'build_network',
-            #    """Spikes can only be recorded from local neurons, but the
-            #    number of local neurons is smaller than the number of neurons
-            #    spikes should be recorded from. Aborting the simulation!""")
-            #exit(1)
-
-        nest.message(M_INFO, 'build_network', 'Connecting spike recorders.')
-        nest.Connect(local_neurons[:network_params['Nrec']], E_recorder,
-                     'all_to_all', 'static_synapse_hpc')
+#    E_neurons = e
+#    if params['record_spikes']:
+#        if params['nvp'] != 1:
+#            local_neurons = nest.GetLocalNodeCollection(E_neurons)
+#            # GetLocalNodeCollection returns a stepped composite NodeCollection, which
+#            # cannot be sliced. In order to allow slicing it later on, we're creating a
+#            # new regular NodeCollection from the plain node IDs.
+#            local_neurons = nest.NodeCollection(local_neurons.tolist())
+#        else:
+#            local_neurons = E_neurons
+#
+#        if len(local_neurons) < network_params['Nrec']:
+#            network_params['Nrec'] = len(local_neurons)
+#            #nest.message(
+#            #    M_ERROR, 'build_network',
+#            #    """Spikes can only be recorded from local neurons, but the
+#            #    number of local neurons is smaller than the number of neurons
+#            #    spikes should be recorded from. Aborting the simulation!""")
+#            #exit(1)
+#
+#        nest.message(M_INFO, 'build_network', 'Connecting spike recorders.')
+#        nest.Connect(local_neurons[:network_params['Nrec']], E_recorder,
+#                     'all_to_all', 'static_synapse_hpc')
 
     # read out time used for building
     BuildEdgeTime = time.time() - tic
-    network_memory = str(memory_thisjob())
+#    network_memory = str(memory_thisjob())
 
     d = {'py_time_create': BuildNodeTime,
          'py_time_connect': BuildEdgeTime,
-         'node_memory': node_memory,
-         'network_memory': network_memory}
+#         'node_memory': node_memory,
+#         'network_memory': network_memory
+    }
     recorders = E_recorder if params['record_spikes'] else None
 
 #    espikes = nest.Create("spike_recorder")
@@ -235,34 +237,36 @@ def run():
     nest.ResetKernel()
     nest.set_verbosity(M_INFO)
 
-    base_memory = str(memory_thisjob())
+#    base_memory = str(memory_thisjob())
 
     build_dict, sr = build_network()
 
-    tic = time.time()
+#    tic = time.time()
 
     nest.Simulate(params['presimtime'])
 
-    PreparationTime = time.time() - tic
-    init_memory = str(memory_thisjob())
+#    PreparationTime = time.time() - tic
+#    init_memory = str(memory_thisjob())
 
-    tic = time.time()
+#    tic = time.time()
 
     nest.Simulate(params['simtime'])
 
-    SimCPUTime = time.time() - tic
-    total_memory = str(memory_thisjob())
+#    SimCPUTime = time.time() - tic
+#    total_memory = str(memory_thisjob())
 
-    average_rate = 0.0
-    if params['record_spikes']:
-        average_rate = compute_rate(sr)
+#    average_rate = 0.0
+#    if params['record_spikes']:
+#        average_rate = compute_rate(sr)
 
-    d = {'py_time_presimulate': PreparationTime,
-         'py_time_simulate': SimCPUTime,
-         'base_memory': base_memory,
-         'init_memory': init_memory,
-         'total_memory': total_memory,
-         'average_rate': average_rate}
+    d = {}
+#    d = {'py_time_presimulate': PreparationTime,
+#         'py_time_simulate': SimCPUTime,
+#         'base_memory': base_memory,
+#         'init_memory': init_memory,
+#         'total_memory': total_memory,
+#         'average_rate': average_rate
+#    }
     d.update(build_dict)
     d.update(nest.GetKernelStatus())
 
