@@ -66,7 +66,7 @@ syn_params = {
 
 astrocyte_model = "astrocyte_lr_1994"
 astrocyte_params = {
-    "IP3": 0.4,  # IP3 initial value in µM
+#    "IP3": 0.4,  # IP3 initial value in µM
     "delta_IP3": 0.5,  # Parameter determining the increase in astrocytic IP3 concentration induced by synaptic input
     "tau_IP3": 2.0,  # Time constant of the exponential decay of astrocytic IP3
 }
