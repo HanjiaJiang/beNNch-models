@@ -162,7 +162,7 @@ def build_network():
                           'resolution': params['dt'],
                           'rng_seed': params['rng_seed'],
                           'overwrite_files': True,
-                          'spike_buffer_shrink_limit': 0.2})
+                          'spike_buffer_shrink_limit': 0})
 
     nest.print_time = False
     nest.overwrite_files = True
