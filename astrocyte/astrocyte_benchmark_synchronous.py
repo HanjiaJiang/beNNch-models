@@ -161,8 +161,7 @@ def build_network():
     nest.SetKernelStatus({'total_num_virtual_procs': params['nvp'],
                           'resolution': params['dt'],
                           'rng_seed': params['rng_seed'],
-                          'overwrite_files': True,
-                          'spike_buffer_shrink_limit': 0})
+                          'overwrite_files': True})
 
     nest.print_time = False
     nest.overwrite_files = True

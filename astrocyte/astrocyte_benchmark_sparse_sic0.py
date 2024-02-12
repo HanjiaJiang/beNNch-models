@@ -54,7 +54,7 @@ network_params = {
 }
 
 syn_params = {
-    "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
+    "w_a2n": 0.0, #0.01,  # weight of astrocyte-to-neuron connection
     "w_e": 1.0,  # weight of excitatory connection in nS
     "w_i": -4.0,  # weight of inhibitory connection in nS
     "d_e": 2.0,  # delay of excitatory connection in ms

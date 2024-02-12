@@ -50,7 +50,7 @@ network_params = {
     "p_third_if_primary": 0.5,  # probability of each created neuron-neuron connection to be paired with one astrocyte
     "pool_size": 10,  # astrocyte pool size for each target neuron
     "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
-    "poisson_rate": 2000,  # Poisson input rate for neurons
+    "poisson_rate": 2750, #b:2500, #a:2750,  # Poisson input rate for neurons
 }
 
 syn_params = {
@@ -101,6 +101,24 @@ def create_astro_network(scale=1.0):
     assert scale >= 1.0, "scale must be >= 1.0"
     nodes_ex = nest.Create(neuron_model, int(network_params["N_ex"] * scale), params=neuron_params_ex)
     nodes_in = nest.Create(neuron_model, int(network_params["N_in"] * scale), params=neuron_params_in)
+    # specific for "intense" network
+    std, bound = 0.05, 0.20
+    nest.SetStatus(nodes_ex, params={
+        'a': nest.math.redraw(nest.random.normal(4, 4*std), 4-4*bound, 4+4*bound),
+        'Delta_T': nest.math.redraw(nest.random.normal(2, 2*std), 2-2*bound, 2+2*bound),
+        'tau_w': nest.math.redraw(nest.random.normal(144, 144*std), 144-144*bound, 144+144*bound),
+        'C_m': nest.math.redraw(nest.random.normal(281, 281*std), 281-281*bound, 281+281*bound),
+        'E_L': nest.math.redraw(nest.random.normal(-70.6, 70.6*std), -70.6-70.6*bound, -70.6+70.6*bound),
+        'V_m': nest.math.redraw(nest.random.normal(-70.6, 70.6*std), -70.6-70.6*bound, -70.6+70.6*bound),
+    })
+    nest.SetStatus(nodes_in, params={
+        'a': nest.math.redraw(nest.random.normal(4, 4*std), 4-4*bound, 4+4*bound),
+        'Delta_T': nest.math.redraw(nest.random.normal(2, 2*std), 2-2*bound, 2+2*bound),
+        'tau_w': nest.math.redraw(nest.random.normal(144, 144*std), 144-144*bound, 144+144*bound),
+        'C_m': nest.math.redraw(nest.random.normal(281, 281*std), 281-281*bound, 281+281*bound),
+        'E_L': nest.math.redraw(nest.random.normal(-70.6, 70.6*std), -70.6-70.6*bound, -70.6+70.6*bound),
+        'V_m': nest.math.redraw(nest.random.normal(-70.6, 70.6*std), -70.6-70.6*bound, -70.6+70.6*bound),
+    })
     nodes_astro = nest.Create(astrocyte_model, int(network_params["N_astro"] * scale), params=astrocyte_params)
     nodes_noise = nest.Create("poisson_generator", params={"rate": network_params["poisson_rate"]})
     return nodes_ex, nodes_in, nodes_astro, nodes_noise
@@ -161,7 +179,8 @@ def build_network():
     nest.SetKernelStatus({'total_num_virtual_procs': params['nvp'],
                           'resolution': params['dt'],
                           'rng_seed': params['rng_seed'],
-                          'overwrite_files': True})
+                          'overwrite_files': True,
+                          'spike_buffer_shrink_limit': 0})
 
     nest.print_time = False
     nest.overwrite_files = True

@@ -138,7 +138,16 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         },
         "third_out": {"synapse_model": "sic_connection", "weight": syn_params["w_a2n"]},
     }
-    nest.TripartiteConnect(nodes_ex, nodes_ex + nodes_in, nodes_astro, conn_spec=conn_params_e, syn_specs=syn_params_e)
+    # n2a input in "zero" case; has to be adjusted if N_neuron != N_astrocyte
+    nest.Connect(
+        nodes_ex, nodes_ex + nodes_in,
+        conn_spec={"rule": "pairwise_bernoulli", "p": network_params["p_primary"] / scale},
+        syn_spec=syn_params_e["third_in"])
+    nest.Connect(
+        nodes_ex, nodes_astro,
+        conn_spec={"rule": "pairwise_bernoulli", "p": network_params["p_primary"] * network_params["p_third_if_primary"] / scale},
+        syn_spec=syn_params_e["third_in"])
+    #nest.TripartiteConnect(nodes_ex, nodes_ex + nodes_in, nodes_astro, conn_spec=conn_params_e, syn_specs=syn_params_e)
     # inhibitory connections are not paired with astrocytes
     conn_params_i = {"rule": "pairwise_bernoulli", "p": network_params["p_primary"] / scale}
     syn_params_i = {
