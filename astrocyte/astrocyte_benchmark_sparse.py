@@ -7,6 +7,7 @@ astrocyte_lr_1994 model. This script is used for HPC benchmarks.
 
 """
 
+import inspect
 import os
 import time
 import scipy.special as sp
@@ -138,7 +139,35 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         },
         "third_out": {"synapse_model": "sic_connection", "weight": syn_params["w_a2n"]},
     }
-    nest.TripartiteConnect(nodes_ex, nodes_ex + nodes_in, nodes_astro, conn_spec=conn_params_e, syn_specs=syn_params_e)
+    if "third_factor_conn_spec" in list(inspect.signature(nest.TripartiteConnect).parameters.keys()):
+        print("Using new TripartiteConnect().")
+        conn_params_e = {
+            "rule": "pairwise_bernoulli",
+            "p": network_params["p_primary"] / scale
+        }
+        conn_params_astro = {
+            "rule": "third_factor_bernoulli_with_pool",
+            "p": network_params["p_third_if_primary"],
+            "pool_size": network_params["pool_size"],
+            "pool_type": network_params["pool_type"],
+        }
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            third_factor_conn_spec=conn_params_astro,
+            syn_specs=syn_params_e,
+        )
+    else:
+        print("Using old TripartiteConnect().")
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            syn_specs=syn_params_e
+        )
     # inhibitory connections are not paired with astrocytes
     conn_params_i = {"rule": "pairwise_bernoulli", "p": network_params["p_primary"] / scale}
     syn_params_i = {
