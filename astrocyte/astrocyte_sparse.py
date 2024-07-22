@@ -239,13 +239,6 @@ def run():
     nest.Simulate(params['simtime'])
 
     d = {}
-#    d = {'py_time_presimulate': PreparationTime,
-#         'py_time_simulate': SimCPUTime,
-#         'base_memory': base_memory,
-#         'init_memory': init_memory,
-#         'total_memory': total_memory,
-#         'average_rate': average_rate
-#    }
     d.update(build_dict)
     d.update(nest.GetKernelStatus())
 
