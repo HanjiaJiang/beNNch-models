@@ -47,8 +47,7 @@ network_params = {
     "N_ex": 8000,  # number of excitatory neurons
     "N_in": 2000,  # number of inhibitory neurons
     "N_astro": 10000,  # number of astrocytes
-    "CE": 800,
-    "CI": 200,
+    "p_primary": 0.1,  # connection probability between neurons
     "p_third_if_primary": 0.5,  # probability of each created neuron-neuron connection to be paired with one astrocyte
     "pool_size": 10,  # astrocyte pool size for each target neuron
     "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
@@ -66,10 +65,9 @@ syn_params = {
 ###############################################################################
 # Set astrocyte parameters.
 
-astrocyte_model = "astrocyte_lr_1994"
+astrocyte_model = "astrocyte_surrogate"
 astrocyte_params = {
-    "delta_IP3": 0.5,  # Parameter determining the increase in astrocytic IP3 concentration induced by synaptic input
-    "tau_IP3": 2.0,  # Time constant of the exponential decay of astrocytic IP3
+    "SIC": 1.0
 }
 
 ###############################################################################
@@ -118,10 +116,10 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
     print("Connecting neurons and astrocytes ...")
     # excitatory connections are paired with astrocytes
     # conn_spec and syn_spec according to the "tripartite_bernoulli_with_pool" rule
-    conn_params_e = {"rule": "fixed_indegree", "indegree": network_params["CE"]}
-    conn_params_astro = {
-        "rule": "third_factor_bernoulli_with_pool",
-        "p": network_params["p_third_if_primary"],
+    conn_params_e = {
+        "rule": "tripartite_bernoulli_with_pool",
+        "p_primary": network_params["p_primary"] / scale,
+        "p_third_if_primary": network_params["p_third_if_primary"],
         "pool_size": network_params["pool_size"],
         "pool_type": network_params["pool_type"],
     }
@@ -140,16 +138,37 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         },
         "third_out": {"synapse_model": "sic_connection", "weight": syn_params["w_a2n"]},
     }
-    nest.TripartiteConnect(
-        nodes_ex,
-        nodes_ex + nodes_in,
-        nodes_astro,
-        conn_spec=conn_params_e,
-        third_factor_conn_spec=conn_params_astro,
-        syn_specs=syn_params_e,
-    )
+    if "third_factor_conn_spec" in list(inspect.signature(nest.TripartiteConnect).parameters.keys()):
+        print("Using new TripartiteConnect().")
+        conn_params_e = {
+            "rule": "pairwise_bernoulli",
+            "p": network_params["p_primary"] / scale
+        }
+        conn_params_astro = {
+            "rule": "third_factor_bernoulli_with_pool",
+            "p": network_params["p_third_if_primary"],
+            "pool_size": network_params["pool_size"],
+            "pool_type": network_params["pool_type"],
+        }
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            third_factor_conn_spec=conn_params_astro,
+            syn_specs=syn_params_e,
+        )
+    else:
+        print("Using old TripartiteConnect().")
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            syn_specs=syn_params_e
+        )
     # inhibitory connections are not paired with astrocytes
-    conn_params_i = {"rule": "fixed_indegree", "indegree": network_params["CI"]}
+    conn_params_i = {"rule": "pairwise_bernoulli", "p": network_params["p_primary"] / scale}
     syn_params_i = {
         "synapse_model": "tsodyks_synapse",
         "weight": syn_params["w_i"],
@@ -278,14 +297,6 @@ def run():
 #    }
     d.update(build_dict)
     d.update(nest.GetKernelStatus())
-
-    # Number of connections
-    conn_data = nest.GetConnections()
-    synapses = conn_data.get("synapse_model")
-    connect_dict = {}
-    for x in ["static_synapse", "tsodyks_synapse", "sic_connection"]:
-        connect_dict[x] = synapses.count(x)
-    d.update(connect_dict)
 
     fn = '{fn}_{rank}.dat'.format(fn=params['log_file'], rank=nest.Rank())
     with open(fn, 'w') as f:

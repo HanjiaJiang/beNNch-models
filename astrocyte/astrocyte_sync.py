@@ -41,14 +41,13 @@ params = {
 ###############################################################################
 # Set network parameters.
 
-model = "sparse"
+model = "sync"
 
 network_params = {
     "N_ex": 8000,  # number of excitatory neurons
     "N_in": 2000,  # number of inhibitory neurons
     "N_astro": 10000,  # number of astrocytes
-    "CE": 800,
-    "CI": 200,
+    "p_primary": 0.1,  # connection probability between neurons
     "p_third_if_primary": 0.5,  # probability of each created neuron-neuron connection to be paired with one astrocyte
     "pool_size": 10,  # astrocyte pool size for each target neuron
     "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
@@ -118,10 +117,10 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
     print("Connecting neurons and astrocytes ...")
     # excitatory connections are paired with astrocytes
     # conn_spec and syn_spec according to the "tripartite_bernoulli_with_pool" rule
-    conn_params_e = {"rule": "fixed_indegree", "indegree": network_params["CE"]}
-    conn_params_astro = {
-        "rule": "third_factor_bernoulli_with_pool",
-        "p": network_params["p_third_if_primary"],
+    conn_params_e = {
+        "rule": "tripartite_bernoulli_with_pool",
+        "p_primary": network_params["p_primary"] / scale,
+        "p_third_if_primary": network_params["p_third_if_primary"],
         "pool_size": network_params["pool_size"],
         "pool_type": network_params["pool_type"],
     }
@@ -140,16 +139,37 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, scale=1.
         },
         "third_out": {"synapse_model": "sic_connection", "weight": syn_params["w_a2n"]},
     }
-    nest.TripartiteConnect(
-        nodes_ex,
-        nodes_ex + nodes_in,
-        nodes_astro,
-        conn_spec=conn_params_e,
-        third_factor_conn_spec=conn_params_astro,
-        syn_specs=syn_params_e,
-    )
+    if "third_factor_conn_spec" in list(inspect.signature(nest.TripartiteConnect).parameters.keys()):
+        print("Using new TripartiteConnect().")
+        conn_params_e = {
+            "rule": "pairwise_bernoulli",
+            "p": network_params["p_primary"] / scale
+        }
+        conn_params_astro = {
+            "rule": "third_factor_bernoulli_with_pool",
+            "p": network_params["p_third_if_primary"],
+            "pool_size": network_params["pool_size"],
+            "pool_type": network_params["pool_type"],
+        }
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            third_factor_conn_spec=conn_params_astro,
+            syn_specs=syn_params_e,
+        )
+    else:
+        print("Using old TripartiteConnect().")
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            syn_specs=syn_params_e
+        )
     # inhibitory connections are not paired with astrocytes
-    conn_params_i = {"rule": "fixed_indegree", "indegree": network_params["CI"]}
+    conn_params_i = {"rule": "pairwise_bernoulli", "p": network_params["p_primary"] / scale}
     syn_params_i = {
         "synapse_model": "tsodyks_synapse",
         "weight": syn_params["w_i"],
@@ -190,53 +210,19 @@ def build_network():
 
 
     BuildNodeTime = time.time() - tic
-#    node_memory = str(memory_thisjob())
 
     tic = time.time()
 
     connect_astro_network(e, i, a, n, scale=params['scale'])
 
-#    E_neurons = e
-#    if params['record_spikes']:
-#        if params['nvp'] != 1:
-#            local_neurons = nest.GetLocalNodeCollection(E_neurons)
-#            # GetLocalNodeCollection returns a stepped composite NodeCollection, which
-#            # cannot be sliced. In order to allow slicing it later on, we're creating a
-#            # new regular NodeCollection from the plain node IDs.
-#            local_neurons = nest.NodeCollection(local_neurons.tolist())
-#        else:
-#            local_neurons = E_neurons
-#
-#        if len(local_neurons) < network_params['Nrec']:
-#            network_params['Nrec'] = len(local_neurons)
-#            #nest.message(
-#            #    M_ERROR, 'build_network',
-#            #    """Spikes can only be recorded from local neurons, but the
-#            #    number of local neurons is smaller than the number of neurons
-#            #    spikes should be recorded from. Aborting the simulation!""")
-#            #exit(1)
-#
-#        nest.message(M_INFO, 'build_network', 'Connecting spike recorders.')
-#        nest.Connect(local_neurons[:network_params['Nrec']], E_recorder,
-#                     'all_to_all', 'static_synapse_hpc')
-
     # read out time used for building
     BuildEdgeTime = time.time() - tic
-#    network_memory = str(memory_thisjob())
 
-    d = {'py_time_create': BuildNodeTime,
-         'py_time_connect': BuildEdgeTime,
-#         'node_memory': node_memory,
-#         'network_memory': network_memory
+    d = {
+        'py_time_create': BuildNodeTime,
+        'py_time_connect': BuildEdgeTime,
     }
     recorders = E_recorder if params['record_spikes'] else None
-
-#    espikes = nest.Create("spike_recorder")
-#    ispikes = nest.Create("spike_recorder")
-#    espikes.set(label="brunel-py-ex", record_to="ascii")
-#    ispikes.set(label="brunel-py-in", record_to="ascii")
-#    nest.Connect(e[:100], espikes)
-#    nest.Connect(i[:100], ispikes)
 
     return d, recorders
 
@@ -246,27 +232,11 @@ def run():
     nest.ResetKernel()
     nest.set_verbosity(M_INFO)
 
-#    base_memory = str(memory_thisjob())
-
     build_dict, sr = build_network()
-
-#    tic = time.time()
 
     nest.Simulate(params['presimtime'])
 
-#    PreparationTime = time.time() - tic
-#    init_memory = str(memory_thisjob())
-
-#    tic = time.time()
-
     nest.Simulate(params['simtime'])
-
-#    SimCPUTime = time.time() - tic
-#    total_memory = str(memory_thisjob())
-
-#    average_rate = 0.0
-#    if params['record_spikes']:
-#        average_rate = compute_rate(sr)
 
     d = {}
 #    d = {'py_time_presimulate': PreparationTime,
@@ -291,16 +261,6 @@ def run():
     with open(fn, 'w') as f:
         for key, value in d.items():
             f.write(key + ' ' + str(value) + '\n')
-
-    # Firing rates
-#    events_ex = espks.n_events
-#    events_in = ispks.n_events
-#    rate_ex = events_ex / (params['presimtime'] + params['simtime']) * 1000.0 / 100
-#    rate_in = events_in / (params['presimtime'] + params['simtime']) * 1000.0 / 100
-#    print(f"Excitatory rate   : {rate_ex:.2f} Hz")
-#    print(f"Inhibitory rate   : {rate_in:.2f} Hz")
-#    nest.raster_plot.from_device(sr, hist=True)
-#    plt.savefig("astrocyte_benchmark.png")
 
 def compute_rate(sr):
     """Compute local approximation of average firing rate
