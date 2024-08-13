@@ -195,6 +195,14 @@ def run():
     d.update(build_dict)
     d.update(nest.GetKernelStatus())
 
+    # Number of connections
+    conn_data = nest.GetConnections()
+    synapses = conn_data.get("synapse_model")
+    connect_dict = {}
+    for x in ["static_synapse", "tsodyks_synapse", "sic_connection"]:
+        connect_dict[x] = synapses.count(x)
+    d.update(connect_dict)
+
     fn = '{fn}_{rank}.dat'.format(fn=params['log_file'], rank=nest.Rank())
     with open(fn, 'w') as f:
         for key, value in d.items():
