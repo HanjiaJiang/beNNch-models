@@ -226,7 +226,7 @@ def build_network():
 
     return d, recorders
 
-def run():
+def run(record_conn=True):
     """Performs a simulation, including network construction"""
 
     nest.ResetKernel()
@@ -243,12 +243,13 @@ def run():
     d.update(nest.GetKernelStatus())
 
     # Number of connections
-    conn_data = nest.GetConnections()
-    synapses = conn_data.get("synapse_model")
-    connect_dict = {}
-    for x in ["static_synapse", "tsodyks_synapse", "sic_connection"]:
-        connect_dict[x] = synapses.count(x)
-    d.update(connect_dict)
+    if record_conn:
+        conn_data = nest.GetConnections()
+        synapses = conn_data.get("synapse_model")
+        connect_dict = {}
+        for x in ["static_synapse", "tsodyks_synapse", "sic_connection"]:
+            connect_dict[x] = synapses.count(x)
+        d.update(connect_dict)
 
     fn = '{fn}_{rank}.dat'.format(fn=params['log_file'], rank=nest.Rank())
     with open(fn, 'w') as f:
@@ -283,4 +284,4 @@ def lambertwm1(x):
 
 
 if __name__ == '__main__':
-    run()
+    run(record_conn=False)
