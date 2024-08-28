@@ -28,6 +28,14 @@ model_default = {
         "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
         "poisson_rate": 2000,  # Poisson input rate for neurons
     },
+    "conn_params_e": {
+        "rule": "pairwise_bernoulli",
+        "p": 0.1,
+    },
+    "conn_params_i": {
+        "rule": "pairwise_bernoulli",
+        "p": 0.1,
+    },
     "syn_params": {
         "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
         "w_e": 1.0,  # weight of excitatory connection in nS
@@ -167,19 +175,14 @@ def build_network(params, model_params, neuron_model='aeif_cond_alpha_astro', as
 
     return d, e, i, a
 
-def run_simulation(params, conn_params_e, conn_params_i):
+def run_simulation(params, model_update_dict):
     """Performs a simulation, including network construction"""
 
     nest.ResetKernel()
     nest.SyncProcesses()
     nest.set_verbosity(M_INFO)
 
-    model_default.update(
-        {
-            'conn_params_e': conn_params_e,
-            'conn_params_i': conn_params_i,
-        }
-    )
+    model_default.update(model_update_dict)
     build_dict, nodes_ex, nodes_in, nodes_astro = build_network(
         params, model_default, neuron_model='aeif_cond_alpha_astro', astrocyte_model='astrocyte_lr_1994', record_conn=True)
 

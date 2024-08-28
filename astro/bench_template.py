@@ -27,11 +27,13 @@ params = {
 
 def run():
     # define conn_spec parameters
-    conn_params_e = {"rule": "pairwise_bernoulli", "p": 0.1/params["scale"]}
-    conn_params_i = {"rule": "pairwise_bernoulli", "p": 0.1/params["scale"]}
+    model_update_dict = {
+        "conn_params_e": {"rule": "pairwise_bernoulli", "p": 0.1/params["scale"]},
+        "conn_params_i": {"rule": "pairwise_bernoulli", "p": 0.1/params["scale"]},
+    }
 
     # run simulation
-    run_simulation(params, conn_params_e, conn_params_i)
+    run_simulation(params, model_update_dict)
 
 if __name__ == '__main__':
     run()
