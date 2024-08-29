@@ -175,18 +175,6 @@ def build_network():
 
     e, i, a, n = create_astro_network(scale=params['scale'])
 
-    nest.message(M_INFO, 'build_network', 'Creating excitatory spike recorder.')
-
-    if params['record_spikes']:
-        recorder_label = os.path.join(
-            '.',
-            'spikes')
-        E_recorder = nest.Create('spike_recorder', params={
-            'record_to': 'ascii',
-            'label': recorder_label
-        })
-
-
     BuildNodeTime = time.time() - tic
 
     tic = time.time()
@@ -200,9 +188,8 @@ def build_network():
         'py_time_create': BuildNodeTime,
         'py_time_connect': BuildEdgeTime,
     }
-    recorders = E_recorder if params['record_spikes'] else None
 
-    return d, recorders
+    return d
 
 def run():
     """Performs a simulation, including network construction"""
@@ -210,7 +197,7 @@ def run():
     nest.ResetKernel()
     nest.set_verbosity(M_INFO)
 
-    build_dict, sr = build_network()
+    build_dict = build_network()
 
     nest.Simulate(params['presimtime'])
 
