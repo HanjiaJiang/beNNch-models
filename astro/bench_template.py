@@ -17,7 +17,7 @@ from network import model_default, run_simulation
 params = {
     'model': '{model_name}',           # model name
     'nvp': {num_vps},                  # total number of virtual processes
-    'scale': {N_SCALING},              # scaling factor of the network size
+    'scale': {scale_N},                # scaling factor of the network size
     'simtime': {model_time_sim},       # total simulation time in ms
     'presimtime': {model_time_presim}, # simulation time until reaching equilibrium
     'dt': 0.1,                         # simulation step
