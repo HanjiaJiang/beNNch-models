@@ -15,7 +15,7 @@ from network import model_default, run_simulation
 # Define all relevant parameters: changes should be made here
 
 params = {
-    'model': {model_name},             # model name
+    'model': '{model_name}',           # model name
     'nvp': {num_vps},                  # total number of virtual processes
     'scale': {N_SCALING},              # scaling factor of the network size
     'simtime': {model_time_sim},       # total simulation time in ms
@@ -61,18 +61,18 @@ def run():
         }
     elif model == "Fixed-indegree":
         model_update_dict = {
-            "conn_params_e": {"rule": "fixed_indegree", "indegree": N_ex*p}
-            "conn_params_i": {"rule": "fixed_indegree", "indegree": N_in*p}
+            "conn_params_e": {"rule": "fixed_indegree", "indegree": N_ex*p},
+            "conn_params_i": {"rule": "fixed_indegree", "indegree": N_in*p},
         }
     elif model == "Fixed-outdegree":
         model_update_dict = {
-            "conn_params_e": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p}
-            "conn_params_i": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p}
+            "conn_params_e": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
+            "conn_params_i": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
         }
     elif model == "Fixed-total-number":
         model_update_dict = {
-            "conn_params_e": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)}
-            "conn_params_i": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)}
+            "conn_params_e": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)},
+            "conn_params_i": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)},
         }
     else:
         print("No correct model specified; use default (Beroulli).")
