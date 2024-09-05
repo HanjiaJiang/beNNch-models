@@ -13,27 +13,17 @@ import plots
 from network import model_default, build_network
 
 ###############################################################################
-# Update model parameters.
-
-model_default.update(
-    {
-        'conn_params_e': {"rule": "pairwise_bernoulli", "p": 0.1},
-        'conn_params_i': {"rule": "pairwise_bernoulli", "p": 0.1},
-    }
-)
-
-###############################################################################
 # Set simulation parameters.
 
 nvp = int(sys.argv[1]) if len(sys.argv) > 1 else os.cpu_count()
 params = {
+    'model': 'Synchronous',      # model name and data path
     'nvp': nvp,                # total number of virtual processes
     'scale': 1,                # scaling factor of the network size
-    'simtime': 1000,           # total simulation time in ms
+    'simtime': 10000,          # total simulation time in ms
     'presimtime': 1000,        # simulation time until reaching equilibrium
     'dt': 0.1,                 # simulation step
     'rng_seed': 1,             # random number generator seed
-    'path_name': 'bernoulli',  # path where all files will have to be written
 }
 
 ###############################################################################
@@ -136,11 +126,72 @@ def plot_conn_distr(nodes_ex, nodes_astro, n_hist=None):
             ylabel="Number of cases", title="Bernoulli")
 
 ###############################################################################
+# This function updates the model parameters.
+
+def update_model_parameters():
+    # define model_update_dict according to specified model
+    model = params["model"]
+    N_ex = model_default["network_params"]["N_ex"]
+    N_in = model_default["network_params"]["N_in"]
+    p = model_default["conn_params_e"]["p"]
+    if model == "Bernoulli":
+        model_update_dict = {
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+        }
+    elif model == "Synchronous":
+        model_update_dict = {
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "syn_params": {
+                "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
+                "w_e": 1.0,  # weight of excitatory connection in nS
+                "w_i": -4.0,  # weight of inhibitory connection in nS
+                "d_e": 2.0,  # delay of excitatory connection in ms
+                "d_i": 2.0,  # delay of inhibitory connection in ms
+            },
+            "neuron_params_ex": {
+                "tau_syn_ex": 2.0,  # excitatory synaptic time constant in ms
+                "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
+            },
+            "neuron_params_in": {
+                "tau_syn_ex": 2.0,  # excitatory synaptic time constant in ms
+                "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
+            },
+        }
+    elif model == "Fixed-indegree":
+        model_update_dict = {
+            "conn_params_e": {"rule": "fixed_indegree", "indegree": N_ex*p},
+            "conn_params_i": {"rule": "fixed_indegree", "indegree": N_in*p},
+        }
+    elif model == "Fixed-outdegree":
+        model_update_dict = {
+            "conn_params_e": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
+            "conn_params_i": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
+        }
+    elif model == "Fixed-total-number":
+        model_update_dict = {
+            "conn_params_e": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)},
+            "conn_params_i": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p)},
+        }
+    else:
+        print("No correct model specified; use default (Beroulli).")
+        model_update_dict = {
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+        }
+    model_default.update(model_update_dict)
+
+
+###############################################################################
 # This is the main function to run the simulation with.
 
 def run():
+    # update model parameters
+    update_model_parameters()
+
     # make data folder if not exist, and copy python scripts
-    path_name = params["path_name"]
+    path_name = params["model"]
     os.system(f"mkdir -p {path_name}")
     os.system(f"rsync -au *.py {path_name}")
 
@@ -222,7 +273,7 @@ def run():
 if __name__ == "__main__":
     # record output; only for debugging
     orig_stdout = sys.stdout
-    path_name = params['path_name']
+    path_name = params["model"]
     os.system(f"mkdir -p {path_name}")
     f = open(f'{path_name}/out.txt', 'w')
     sys.stdout = f

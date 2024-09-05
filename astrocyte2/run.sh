@@ -11,8 +11,7 @@
 # Note: The current working directory at this point is
 # the directory where sbatch was executed.
 
-source $PROJECT/jiang4/benchmark/env.sh
-#module load nest-simulator/3.7/default
+source $PROJECT/jiang4/benchmark/envnojemalloc.sh
 
 # Path to python script
 pwd=$PWD
