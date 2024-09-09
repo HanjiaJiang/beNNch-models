@@ -72,7 +72,7 @@ def run():
     elif model == "Fixed-total-number":
         model_update_dict = {
             "conn_params_e": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p*params["scale"])},
-            "conn_params_i": {"rule": "fixed_total_number", "N": int(N_ex*(N_ex+N_in)*p*params["scale"])},
+            "conn_params_i": {"rule": "fixed_total_number", "N": int(N_in*(N_ex+N_in)*p*params["scale"])},
         }
     else:
         print("No correct model specified; use default (Beroulli).")

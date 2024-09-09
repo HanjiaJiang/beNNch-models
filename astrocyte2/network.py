@@ -162,9 +162,9 @@ def build_network(params, model_params, neuron_model='aeif_cond_alpha_astro', as
     d = {
         'py_time_create': BuildNodeTime,
         'py_time_connect': BuildEdgeTime,
-        'N_ex': model_params['network_params']['N_ex'],
-        'N_in': model_params['network_params']['N_in'],
-        'N_astro': model_params['network_params']['N_astro'],
+        'N_ex': len(e),
+        'N_in': len(i),
+        'N_astro': len(a),
     }
 
     # Number of connections
