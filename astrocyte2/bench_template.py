@@ -61,13 +61,13 @@ def run():
         }
     elif model == "Fixed-indegree":
         model_update_dict = {
-            "conn_params_e": {"rule": "fixed_indegree", "indegree": N_ex*p},
-            "conn_params_i": {"rule": "fixed_indegree", "indegree": N_in*p},
+            "conn_params_e": {"rule": "fixed_indegree", "indegree": int(N_ex*p)},
+            "conn_params_i": {"rule": "fixed_indegree", "indegree": int(N_in*p)},
         }
     elif model == "Fixed-outdegree":
         model_update_dict = {
-            "conn_params_e": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
-            "conn_params_i": {"rule": "fixed_outdegree", "outdegree": (N_ex+N_in)*p},
+            "conn_params_e": {"rule": "fixed_outdegree", "outdegree": int((N_ex+N_in)*p)},
+            "conn_params_i": {"rule": "fixed_outdegree", "outdegree": int((N_ex+N_in)*p)},
         }
     elif model == "Fixed-total-number":
         model_update_dict = {
