@@ -165,6 +165,8 @@ def build_network(params, model_params, neuron_model='aeif_cond_alpha_astro', as
         'N_ex': len(e),
         'N_in': len(i),
         'N_astro': len(a),
+        'pool_size': model_params["network_params"]["pool_size"],
+        'pool_type': 0 if model_params["network_params"]["pool_type"] == "random" else 1,
     }
 
     # Number of connections
@@ -185,7 +187,9 @@ def run_simulation(params, model_update_dict):
     nest.SyncProcesses()
     nest.set_verbosity(M_INFO)
 
-    model_default.update(model_update_dict)
+    for key, value in model_update_dict.items():
+        model_default[key].update(value)
+
     build_dict, nodes_ex, nodes_in, nodes_astro = build_network(
         params, model_default, neuron_model='aeif_cond_alpha_astro', astrocyte_model='astrocyte_lr_1994', record_conn=True)
 

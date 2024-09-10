@@ -24,6 +24,8 @@ params = {
     'rng_seed': {rng_seed},            # random number generator seed
     'path_name': '.',                  # path where all files will have to be written
     'log_file': 'logfile',             # naming scheme for the log files
+    'pool_size': int({pool_size}),
+    'pool_type': '{pool_type}',
 }
 
 def run():
@@ -44,18 +46,12 @@ def run():
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "syn_params": {
-                "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
-                "w_e": 1.0,  # weight of excitatory connection in nS
-                "w_i": -4.0,  # weight of inhibitory connection in nS
-                "d_e": 2.0,  # delay of excitatory connection in ms
                 "d_i": 2.0,  # delay of inhibitory connection in ms
             },
             "neuron_params_ex": {
-                "tau_syn_ex": 2.0,  # excitatory synaptic time constant in ms
                 "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
             },
             "neuron_params_in": {
-                "tau_syn_ex": 2.0,  # excitatory synaptic time constant in ms
                 "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
             },
         }
@@ -80,6 +76,9 @@ def run():
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
+
+    model_update_dict['network_params'] = {'pool_size': params['pool_size']}
+    model_update_dict['network_params'].update({'pool_type': params['pool_type']})
 
     # run simulation
     run_simulation(params, model_update_dict)
