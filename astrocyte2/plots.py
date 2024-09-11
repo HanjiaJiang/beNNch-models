@@ -36,6 +36,7 @@ def plot_benchmark_model(n_neurons_hist, events_sr, events_astro, events_neuro, 
 
     # save figure
     plt.savefig(f'{save_path}/benchmark_model.eps', format='eps', dpi=400)
+    plt.savefig(f'{save_path}/benchmark_model.png', format='png', dpi=400)
     plt.close()
 
     # save data to pickle

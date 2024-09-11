@@ -22,7 +22,8 @@ export OMP_DISPLAY_ENV=VERBOSE
 export OMP_DISPLAY_AFFINITY=TRUE
 export OMP_PROC_BIND=TRUE
 
-export OMP_NUM_THREADS=16
+n_threads=16
+export OMP_NUM_THREADS=$n_threads
 
 # Bind by threads
-srun --cpus-per-task=16 --threads-per-core=1 --cpu-bind=verbose,threads --distribution=block:cyclic:fcyclic python3 $script 16
+srun --cpus-per-task=$n_threads --threads-per-core=1 --cpu-bind=verbose,threads --distribution=block:cyclic:fcyclic python3 $script $n_threads $2
