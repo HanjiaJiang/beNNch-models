@@ -27,6 +27,8 @@ model_default = {
         "pool_size": 10,  # astrocyte pool size for each target neuron
         "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
         "poisson_rate": 2000,  # Poisson input rate for neurons
+        "neuron_model": "aeif_cond_alpha_astro",
+        "astrocyte_model": "astrocyte_lr_1994",
     },
     "conn_params_e": {},
     "conn_params_i": {},
@@ -117,7 +119,7 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, model_pa
     nest.Connect(nodes_in, nodes_ex + nodes_in, conn_params_i, syn_params_i)
 
 
-def build_network(params, model_params, neuron_model='aeif_cond_alpha_astro', astrocyte_model='astrocyte_lr_1994', record_conn=True):
+def build_network(params, model_params, record_conn=True):
     """Builds the network including setting of simulation and neuron
     parameters, creation of neurons and connections
     """
@@ -136,8 +138,8 @@ def build_network(params, model_params, neuron_model='aeif_cond_alpha_astro', as
         model_params['neuron_params_ex'],
         model_params['neuron_params_in'],
         model_params['astrocyte_params'],
-        neuron_model,
-        astrocyte_model,
+        model_params['network_params']['neuron_model'],
+        model_params['network_params']['astrocyte_model'],
         scale=params['scale']
     )
 
@@ -184,8 +186,7 @@ def run_simulation(params, model_update_dict):
     for key, value in model_update_dict.items():
         model_default[key].update(value)
 
-    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(
-        params, model_default, neuron_model='aeif_cond_alpha_astro', astrocyte_model='astrocyte_lr_1994', record_conn=True)
+    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default, record_conn=True)
 
     nest.Simulate(params['presimtime'])
 

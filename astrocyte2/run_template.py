@@ -144,6 +144,12 @@ def update_model_parameters():
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
+    elif model == "Surrogate":
+        model_update_dict = {
+            "network_params": {"astrocyte_model": "astrocyte_surrogate"},
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+        }
     elif model == "Synchronous":
         model_update_dict = {
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
@@ -180,7 +186,9 @@ def update_model_parameters():
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
 
-    model_update_dict['network_params'] = {'pool_size': params['pool_size']}
+    if 'network_params' not in model_update_dict:
+        model_update_dict['network_params'] = {}
+    model_update_dict['network_params'].update({'pool_size': params['pool_size']})
     model_update_dict['network_params'].update({'pool_type': params['pool_type']})
 
     for key, value in model_update_dict.items():
@@ -208,10 +216,9 @@ def run():
     nest.set_verbosity(10)
 
     # build network
-    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(
-        params, model_default, neuron_model='aeif_cond_alpha_astro', astrocyte_model='astrocyte_lr_1994', record_conn=False)
+    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default, record_conn=False)
 
-    # crewate devices
+    # create devices
     sr, mm_neuron, mm_astro = create_devices(nodes_ex, nodes_in, nodes_astro)
 
     # run simulation

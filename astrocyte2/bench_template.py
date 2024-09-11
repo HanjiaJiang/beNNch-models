@@ -55,6 +55,12 @@ def run():
                 "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
             },
         }
+    elif model == "Surrogate":
+        model_update_dict = {
+            "network_params": {"astrocyte_model": "astrocyte_surrogate"},
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+        }
     elif model == "Fixed-indegree":
         model_update_dict = {
             "conn_params_e": {"rule": "fixed_indegree", "indegree": int(N_ex*p)},
@@ -77,7 +83,9 @@ def run():
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
 
-    model_update_dict['network_params'] = {'pool_size': params['pool_size']}
+    if 'network_params' not in model_update_dict:
+        model_update_dict['network_params'] = {}
+    model_update_dict['network_params'].update({'pool_size': params['pool_size']})
     model_update_dict['network_params'].update({'pool_type': params['pool_type']})
 
     # run simulation
