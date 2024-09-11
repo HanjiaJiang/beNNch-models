@@ -28,14 +28,8 @@ model_default = {
         "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
         "poisson_rate": 2000,  # Poisson input rate for neurons
     },
-    "conn_params_e": {
-        "rule": "pairwise_bernoulli",
-        "p": 0.1,
-    },
-    "conn_params_i": {
-        "rule": "pairwise_bernoulli",
-        "p": 0.1,
-    },
+    "conn_params_e": {},
+    "conn_params_i": {},
     "syn_params": {
         "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
         "w_e": 1.0,  # weight of excitatory connection in nS

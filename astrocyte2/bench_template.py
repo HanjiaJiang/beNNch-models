@@ -35,7 +35,7 @@ def run():
     # define model_update_dict according to specified model
     N_ex = model_default["network_params"]["N_ex"]
     N_in = model_default["network_params"]["N_in"]
-    p = model_default["conn_params_e"]["p"]
+    p = 0.1
     if model == "Bernoulli":
         model_update_dict = {
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
