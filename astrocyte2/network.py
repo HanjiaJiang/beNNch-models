@@ -38,6 +38,7 @@ model_default = {
         "w_i": -4.0,  # weight of inhibitory connection in nS
         "d_e": 2.0,  # delay of excitatory connection in ms
         "d_i": 1.0,  # delay of inhibitory connection in ms
+        "d_a2n": 1.0,
     },
     "neuron_params_ex": {
         "tau_syn_ex": 2.0,  # excitatory synaptic time constant in ms
@@ -99,7 +100,11 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, model_pa
             "tau_psc": model_params["neuron_params_ex"]["tau_syn_ex"],
             "delay": model_params["syn_params"]["d_e"],
         },
-        "third_out": {"synapse_model": "sic_connection", "weight": model_params["syn_params"]["w_a2n"]},
+        "third_out": {
+            "synapse_model": "sic_connection",
+            "weight": model_params["syn_params"]["w_a2n"],
+            "delay": model_params["syn_params"]["d_a2n"],
+        },
     }
     nest.TripartiteConnect(
         nodes_ex,
