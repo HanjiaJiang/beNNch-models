@@ -138,15 +138,10 @@ def update_model_parameters():
     # define model_update_dict according to specified model
     N_ex = model_default["network_params"]["N_ex"]
     N_in = model_default["network_params"]["N_in"]
-    p = 0.1
+    p = model_default["network_params"]["p_primary"]
+    p_third_if_primary = model_default["network_params"]["p_third_if_primary"]
     if model == "Bernoulli":
         model_update_dict = {
-            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
-            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
-        }
-    elif model == "Surrogate":
-        model_update_dict = {
-            "network_params": {"astrocyte_model": "astrocyte_surrogate"},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
@@ -163,6 +158,18 @@ def update_model_parameters():
             "neuron_params_in": {
                 "tau_syn_in": 2.0,  # inhibitory synaptic time constant in ms
             },
+        }
+    elif model == "Surrogate":
+        model_update_dict = {
+            "network_params": {"astrocyte_model": "astrocyte_surrogate"},
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+        }
+    elif model == "No-tripartite":
+        model_update_dict = {
+            "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "conn_params_e_astro": {"rule": "pairwise_bernoulli", "p": p*p_third_if_primary/params["scale"]},
         }
     elif model == "Fixed-indegree":
         model_update_dict = {

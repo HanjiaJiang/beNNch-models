@@ -23,15 +23,18 @@ model_default = {
         "N_ex": 8000,  # number of excitatory neurons
         "N_in": 2000,  # number of inhibitory neurons
         "N_astro": 10000,  # number of astrocytes
+        "p_primary": 0.1,
         "p_third_if_primary": 0.5,  # probability of each created neuron-neuron connection to be paired with one astrocyte
         "pool_size": 10,  # astrocyte pool size for each target neuron
         "pool_type": "random",  # astrocyte pool will be chosen randomly for each target neuron
         "poisson_rate": 2000,  # Poisson input rate for neurons
         "neuron_model": "aeif_cond_alpha_astro",
         "astrocyte_model": "astrocyte_lr_1994",
+        "no_tripartite": False,
     },
     "conn_params_e": {},
     "conn_params_i": {},
+    "conn_params_e_astro": {}, # for neuron=>astrocyte connections in no_tripartite model
     "syn_params": {
         "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
         "w_e": 1.0,  # weight of excitatory connection in nS
@@ -106,14 +109,24 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, model_pa
             "delay": model_params["syn_params"]["d_a2n"],
         },
     }
-    nest.TripartiteConnect(
-        nodes_ex,
-        nodes_ex + nodes_in,
-        nodes_astro,
-        conn_spec=conn_params_e,
-        third_factor_conn_spec=conn_params_astro,
-        syn_specs=syn_params_e,
-    )
+    if model_params["network_params"]["no_tripartite"]:
+        nest.Connect(
+            nodes_ex, nodes_ex + nodes_in,
+            conn_spec=conn_params_e,
+            syn_spec=syn_params_e["primary"])
+        nest.Connect(
+            nodes_ex, nodes_astro,
+            conn_spec=model_params["conn_params_e_astro"],
+            syn_spec=syn_params_e["third_in"])
+    else:
+        nest.TripartiteConnect(
+            nodes_ex,
+            nodes_ex + nodes_in,
+            nodes_astro,
+            conn_spec=conn_params_e,
+            third_factor_conn_spec=conn_params_astro,
+            syn_specs=syn_params_e,
+        )
     # inhibitory connections are not paired with astrocytes
     syn_params_i = {
         "synapse_model": "tsodyks_synapse",
