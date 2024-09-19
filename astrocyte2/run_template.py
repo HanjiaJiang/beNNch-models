@@ -27,6 +27,7 @@ params = {
     'rng_seed': 1,             # random number generator seed
     'pool_size': 10,
     'pool_type': 'random',
+    'default_astro': True,
 }
 
 ###############################################################################
@@ -167,6 +168,7 @@ def update_model_parameters():
         }
     elif model == "No-tripartite":
         model_update_dict = {
+            "network_params": {"no_tripartite": True},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_e_astro": {"rule": "pairwise_bernoulli", "p": p*p_third_if_primary/params["scale"]},
@@ -199,10 +201,17 @@ def update_model_parameters():
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
 
-    if 'network_params' not in model_update_dict:
-        model_update_dict['network_params'] = {}
-    model_update_dict['network_params'].update({'pool_size': params['pool_size']})
-    model_update_dict['network_params'].update({'pool_type': params['pool_type']})
+    if 'network_params' in model_update_dict:
+        model_update_dict['network_params'].update({'pool_size': params['pool_size'], 'pool_type': params['pool_type']})
+    else:
+        model_update_dict['network_params'] = {'pool_size': params['pool_size'], 'pool_type': params['pool_type']}
+
+    if params['default_astro']:
+        model_update_dict['astrocyte_params'] = {'IP3': 0.4}
+        if 'syn_params' in model_update_dict:
+            model_update_dict['syn_params'].update({'w_a2n': 0.05})
+        else:
+            model_update_dict['syn_params'] = {'w_a2n': 0.05}
 
     for key, value in model_update_dict.items():
         model_default[key].update(value)
