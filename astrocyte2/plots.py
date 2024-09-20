@@ -2,7 +2,7 @@ import os
 import pickle
 
 import matplotlib
-matplotlib.rcParams["font.size"] = 15
+matplotlib.rcParams["font.size"] = 13
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.gridspec as gridspec
@@ -141,7 +141,7 @@ def plot_raster(axe, events, xlims=(None, None), ylims=(None, None), n_limit=100
     events_raster = filter_by_n(events, n_limit)
     # raster plot
     axe.plot(events_raster["times"], events_raster["senders"], ".k", markersize=2)
-    axe.set_ylabel("Neuron ID")
+    axe.set_ylabel("Neurons")
     axe.set_xlim(xlims)
     axe.set_ylim(ylims)
 
@@ -192,14 +192,15 @@ def set_broken_axes(axe, axe_top, ylims, bottom_frac=0.8, broken_frac=0.05):
 
 def make_panels_benchmark_model(
     n_neurons_hist_a, events_sr_a, events_astro_a, events_neuro_a, n_neurons_hist_b, events_sr_b, events_astro_b,
-    events_neuro_b, broken_axis=True, save_path="make_figure_benchmark_model"):
+    events_neuro_b, broken_axis=True, save_path="makefig_benchmark_model"):
     """This function makes separate panels for a external composite figure workflow."""
     # create save folder
     os.system(f"mkdir -p {save_path}")
     # xlims for all panels
     xlims = (0, 5000.0)
     # different ylims for different panels
-    ylims_hist, ylims_sic = (0.0, 50.0), (-1.0, 31.0)
+    ylims_hist_low, ylims_hist_high = (0.0, 50.0), (0.0, 200.0)
+    ylims_sic = (-1.0, 31.0)
     ylims_ip3, ylims_calcium = (-0.1, 10.1), (-0.01, 1.01)
     # position of axes for all panels
     pos = [0.25, 0.2, 0.5, 0.7]
@@ -220,18 +221,18 @@ def make_panels_benchmark_model(
     # C = firing rate histogram, sparse
     fig, axe = plt.subplots(1, 1, figsize=(4, 1.5))
     axe.set_position(pos)
-    plot_hist(axe, events_sr_a, n_neurons_hist_a, ylims=ylims_hist, xlims=xlims)
+    plot_hist(axe, events_sr_a, n_neurons_hist_a, ylims=ylims_hist_low, xlims=xlims)
     plt.savefig(f"{save_path}/benchmark_model_C.eps", format='eps', dpi=400)
     plt.savefig(f"{save_path}/benchmark_model_C.png", dpi=400)
     plt.close()
     # D = firing rate histogram, synchronous
     fig, axe = plt.subplots(1, 1, figsize=(4, 1.5))
     axe.set_position(pos)
-    plot_hist(axe, events_sr_b, n_neurons_hist_b, ylims=ylims_hist, xlims=xlims)
+    plot_hist(axe, events_sr_b, n_neurons_hist_b, ylims=ylims_hist_high, xlims=xlims)
     if broken_axis:
         axe_top = fig.add_axes(axe.get_position())
         plot_hist(axe_top, events_sr_b, n_neurons_hist_b, xlims=xlims)
-        set_broken_axes(axe, axe_top, ylims_hist)
+        set_broken_axes(axe, axe_top, ylims_hist_high)
     plt.savefig(f"{save_path}/benchmark_model_D.eps", format='eps', dpi=400)
     plt.savefig(f"{save_path}/benchmark_model_D.png", dpi=400)
     plt.close()
@@ -269,9 +270,9 @@ def make_panels_benchmark_model(
     plt.close()
 
 if __name__ == "__main__":
-    with open(f"sparse/data.pkl", "rb") as f:
+    with open(f"Sparse/data.pkl", "rb") as f:
         a, b, c, d = pickle.load(f)
-    with open(f"synchronous/data.pkl", "rb") as f:
+    with open(f"Synchronous/data.pkl", "rb") as f:
         e, f, g, h = pickle.load(f)
     make_panels_benchmark_model(a, b, c, d, e, f, g, h)
     print("Figure is done!")

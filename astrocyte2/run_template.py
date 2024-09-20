@@ -15,10 +15,10 @@ from network import model_default, build_network
 ###############################################################################
 # Set simulation parameters.
 
-nvp = int(sys.argv[1]) if len(sys.argv) > 1 else os.cpu_count()
-model = sys.argv[2] if len(sys.argv) > 2 else 'Bernoulli'
+model = sys.argv[1] if len(sys.argv) > 1 else 'Bernoulli'
+nvp = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else os.cpu_count()
 params = {
-    'model': model,      # model name and data path
+    'model': model,            # model name and data path
     'nvp': nvp,                # total number of virtual processes
     'scale': 1,                # scaling factor of the network size
     'simtime': 10000,          # total simulation time in ms
@@ -27,7 +27,7 @@ params = {
     'rng_seed': 1,             # random number generator seed
     'pool_size': 10,
     'pool_type': 'random',
-    'default_astro': True,
+    'default_astro': False,
 }
 
 ###############################################################################
@@ -141,7 +141,7 @@ def update_model_parameters():
     N_in = model_default["network_params"]["N_in"]
     p = model_default["network_params"]["p_primary"]
     p_third_if_primary = model_default["network_params"]["p_third_if_primary"]
-    if model == "Bernoulli":
+    if model == "Bernoulli" or model == "Sparse":
         model_update_dict = {
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},

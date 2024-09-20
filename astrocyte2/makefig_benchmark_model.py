@@ -96,7 +96,7 @@ def some_matplotlib_figure(
 
     return fname, fig_size
 
-def create_composite_figure(name_root,master_file_name,panels_dict,draw_grid=False,fig_size=(10,10),folder_name="make_figure_benchmark_model"):
+def create_composite_figure(name_root,master_file_name,panels_dict,draw_grid=False,fig_size=(10,10),folder_name="makefig_benchmark_model"):
 
     file = open('%s.tex' % name_root , 'w')
     file.write(r"\documentclass{article}")

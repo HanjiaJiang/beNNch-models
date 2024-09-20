@@ -26,7 +26,7 @@ params = {
     'log_file': 'logfile',             # naming scheme for the log files
     'pool_size': int({pool_size}),
     'pool_type': '{pool_type}',
-    'default_astro': True,
+    'default_astro': False,
 }
 
 def run():
@@ -38,7 +38,7 @@ def run():
     N_in = model_default["network_params"]["N_in"]
     p = model_default["network_params"]["p_primary"]
     p_third_if_primary = model_default["network_params"]["p_third_if_primary"]
-    if model == "Bernoulli":
+    if model == "Bernoulli" or model == "Sparse":
         model_update_dict = {
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},

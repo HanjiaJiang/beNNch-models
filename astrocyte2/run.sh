@@ -26,4 +26,4 @@ n_threads=16
 export OMP_NUM_THREADS=$n_threads
 
 # Bind by threads
-srun --cpus-per-task=$n_threads --threads-per-core=1 --cpu-bind=verbose,threads --distribution=block:cyclic:fcyclic python3 $script $n_threads $2
+srun --cpus-per-task=$n_threads --threads-per-core=1 --cpu-bind=verbose,threads --distribution=block:cyclic:fcyclic python3 $script $2 $n_threads
