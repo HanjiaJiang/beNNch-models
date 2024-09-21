@@ -166,7 +166,7 @@ def update_model_parameters():
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
         }
-    elif model == "No-tripartite":
+    elif model == "No Tripartite":
         model_update_dict = {
             "network_params": {"no_tripartite": True},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
