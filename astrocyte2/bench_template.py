@@ -62,6 +62,7 @@ def run():
             "network_params": {"astrocyte_model": "astrocyte_surrogate"},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "astrocyte_params": {"SIC": 1.0},
         }
     elif model == "No Tripartite":
         model_update_dict = {
@@ -104,7 +105,8 @@ def run():
         model_update_dict['network_params'] = {'pool_size': params['pool_size'], 'pool_type': params['pool_type']}
 
     if params['default_astro']:
-        model_update_dict['astrocyte_params'] = {'IP3': 0.4, 'delta_IP3': 0.0002, 'tau_IP3': 7142.0}
+        if 'astrocyte_params' not in model_update_dict:
+            model_update_dict['astrocyte_params'] = {'IP3': 0.4, 'delta_IP3': 0.0002, 'tau_IP3': 7142.0}
         if 'syn_params' in model_update_dict:
             model_update_dict['syn_params'].update({'w_a2n': 0.05})
         else:

@@ -202,9 +202,12 @@ def run_simulation(params, model_update_dict):
     nest.set_verbosity(M_INFO)
 
     for key, value in model_update_dict.items():
-        model_default[key].update(value)
+        if key == "astrocyte_params":
+            model_default[key] = value
+        else:
+            model_default[key].update(value)
 
-    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default, record_conn=True)
+    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default, record_conn=False)
 
     nest.Simulate(params['presimtime'])
 
