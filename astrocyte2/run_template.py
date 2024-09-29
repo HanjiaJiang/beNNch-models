@@ -27,7 +27,6 @@ params = {
     'rng_seed': 1,             # random number generator seed
     'pool_size': 10,
     'pool_type': 'random',
-    'default_astro': False,
 }
 
 ###############################################################################
@@ -165,6 +164,7 @@ def update_model_parameters():
             "network_params": {"astrocyte_model": "astrocyte_surrogate"},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
+            "astrocyte_params": {"SIC": 1.0},
         }
     elif model == "No Tripartite":
         model_update_dict = {
@@ -206,15 +206,11 @@ def update_model_parameters():
     else:
         model_update_dict['network_params'] = {'pool_size': params['pool_size'], 'pool_type': params['pool_type']}
 
-    if params['default_astro']:
-        model_update_dict['astrocyte_params'] = {'IP3': 0.4}
-        if 'syn_params' in model_update_dict:
-            model_update_dict['syn_params'].update({'w_a2n': 0.05})
-        else:
-            model_update_dict['syn_params'] = {'w_a2n': 0.05}
-
     for key, value in model_update_dict.items():
-        model_default[key].update(value)
+        if key == "astrocyte_params":
+            model_default[key] = value
+        else:
+            model_default[key].update(value)
 
 
 ###############################################################################

@@ -26,7 +26,6 @@ params = {
     'log_file': 'logfile',             # naming scheme for the log files
     'pool_size': int({pool_size}),
     'pool_type': '{pool_type}',
-    'default_astro': False,
 }
 
 def run():
@@ -103,14 +102,6 @@ def run():
         model_update_dict['network_params'].update({'pool_size': params['pool_size'], 'pool_type': params['pool_type']})
     else:
         model_update_dict['network_params'] = {'pool_size': params['pool_size'], 'pool_type': params['pool_type']}
-
-    if params['default_astro']:
-        if 'astrocyte_params' not in model_update_dict:
-            model_update_dict['astrocyte_params'] = {'IP3': 0.4, 'delta_IP3': 0.0002, 'tau_IP3': 7142.0}
-        if 'syn_params' in model_update_dict:
-            model_update_dict['syn_params'].update({'w_a2n': 0.05})
-        else:
-            model_update_dict['syn_params'] = {'w_a2n': 0.05}
 
     # run simulation
     run_simulation(params, model_update_dict)

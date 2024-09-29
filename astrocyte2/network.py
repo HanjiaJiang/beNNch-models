@@ -36,7 +36,7 @@ model_default = {
     "conn_params_i": {},
     "conn_params_e_astro": {}, # for neuron=>astrocyte connections in no_tripartite model
     "syn_params": {
-        "w_a2n": 0.01,  # weight of astrocyte-to-neuron connection
+        "w_a2n": 0.05,  # weight of astrocyte-to-neuron connection
         "w_e": 1.0,  # weight of excitatory connection in nS
         "w_i": -4.0,  # weight of inhibitory connection in nS
         "d_e": 2.0,  # delay of excitatory connection in ms
@@ -52,8 +52,7 @@ model_default = {
         "tau_syn_in": 4.0,  # inhibitory synaptic time constant in ms
     },
     "astrocyte_params": {
-        "delta_IP3": 0.5,  # Parameter determining the increase in astrocytic IP3 concentration induced by synaptic input
-        "tau_IP3": 2.0,  # Time constant of the exponential decay of astrocytic IP3
+        "IP3": 0.4,  # IP3 initial value in µM
     },
 }
 
@@ -137,7 +136,7 @@ def connect_astro_network(nodes_ex, nodes_in, nodes_astro, nodes_noise, model_pa
     nest.Connect(nodes_in, nodes_ex + nodes_in, conn_params_i, syn_params_i)
 
 
-def build_network(params, model_params, record_conn=True):
+def build_network(params, model_params, record_conn=False):
     """Builds the network including setting of simulation and neuron
     parameters, creation of neurons and connections
     """
@@ -160,8 +159,6 @@ def build_network(params, model_params, record_conn=True):
         model_params['network_params']['astrocyte_model'],
         scale=params['scale']
     )
-
-    nest.message(M_INFO, 'build_network', 'Creating excitatory spike recorder.')
 
     BuildNodeTime = time.time() - tic
 
@@ -207,7 +204,7 @@ def run_simulation(params, model_update_dict):
         else:
             model_default[key].update(value)
 
-    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default, record_conn=False)
+    build_dict, nodes_ex, nodes_in, nodes_astro = build_network(params, model_default)
 
     nest.Simulate(params['presimtime'])
 
