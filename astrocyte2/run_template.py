@@ -53,7 +53,8 @@ def create_devices(exc, inh, astro):
     sampled_neurons = sorted(random.sample(sampled_neurons, N_analysis))
     sampled_astrocytes = sorted(random.sample(astro_list, N_analysis))
     nest.Connect(mm_neuron, sampled_neurons)
-    nest.Connect(mm_astro, sampled_astrocytes)
+    if nest.GetStatus(astro)[0]["model"] == "astrocyte_lr_1994":
+        nest.Connect(mm_astro, sampled_astrocytes)
     return sr, mm_neuron, mm_astro
 
 ###############################################################################
@@ -164,7 +165,7 @@ def update_model_parameters():
             "network_params": {"astrocyte_model": "astrocyte_surrogate"},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
-            "astrocyte_params": {"SIC": 1.0},
+            "astrocyte_params": {"SIC": 3.5},
         }
     elif model == "No Tripartite":
         model_update_dict = {
@@ -230,6 +231,7 @@ def run():
 
     # create and connect network and devices
     nest.ResetKernel()
+    nest.Install("astrocyte_surrogate_module")
     nest.SyncProcesses()
     nest.set_verbosity(10)
 
