@@ -161,6 +161,7 @@ def build_network(params, model_params, record_conn=False):
     )
 
     BuildNodeTime = time.time() - tic
+    node_memory = str(memory_thisjob())
 
     tic = time.time()
 
@@ -169,6 +170,7 @@ def build_network(params, model_params, record_conn=False):
 
     # read out time used for building
     BuildEdgeTime = time.time() - tic
+    network_memory = str(memory_thisjob())
 
     d = {
         'py_time_create': BuildNodeTime,
@@ -178,6 +180,8 @@ def build_network(params, model_params, record_conn=False):
         'N_astro': len(a),
         'pool_size': model_params["network_params"]["pool_size"],
         'pool_type': 0 if model_params["network_params"]["pool_type"] == "random" else 1,
+        'node_memory': node_memory,
+        'network_memory': network_memory,
     }
 
     # Number of connections
@@ -191,12 +195,20 @@ def build_network(params, model_params, record_conn=False):
 
     return d, e, i, a
 
+def memory_thisjob():
+    """Wrapper to obtain current memory usage"""
+    nest.ll_api.sr('memory_thisjob')
+    return nest.ll_api.spp()
+
 def run_simulation(params, model_update_dict):
     """Performs a simulation, including network construction"""
 
     nest.ResetKernel()
+    nest.Install("astrocyte_surrogate_module")
     nest.SyncProcesses()
     nest.set_verbosity(M_INFO)
+
+    base_memory = str(memory_thisjob())
 
     for key, value in model_update_dict.items():
         if key == "astrocyte_params":
@@ -208,9 +220,17 @@ def run_simulation(params, model_update_dict):
 
     nest.Simulate(params['presimtime'])
 
+    init_memory = str(memory_thisjob())
+
     nest.Simulate(params['simtime'])
 
-    d = {}
+    total_memory = str(memory_thisjob())
+
+    d = {
+         'base_memory': base_memory,
+         'init_memory': init_memory,
+         'total_memory': total_memory,
+    }
     d.update(build_dict)
     d.update(nest.GetKernelStatus())
 
