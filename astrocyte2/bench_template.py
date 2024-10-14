@@ -61,7 +61,7 @@ def run():
             "network_params": {"astrocyte_model": "astrocyte_surrogate"},
             "conn_params_e": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
             "conn_params_i": {"rule": "pairwise_bernoulli", "p": p/params["scale"]},
-            "astrocyte_params": {"SIC": 1.0},
+            "astrocyte_params": {"SIC": 3.5},
         }
     elif model == "No Tripartite":
         model_update_dict = {
