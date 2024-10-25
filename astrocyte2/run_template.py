@@ -4,6 +4,7 @@
 import os
 import sys
 import random
+import pickle
 
 import nest
 import numpy as np
@@ -119,13 +120,18 @@ def calc_synchrony(neuron_spikes, n_neurons, start, end, binwidth=10):
 ###############################################################################
 # This function plots the connections between neurons and astrocytes.
 
-def plot_conn_distr(nodes_ex, nodes_astro, n_hist=None):
+def plot_conn_distr(nodes_ex, nodes_astro, save_path, n_hist=None):
     for conn_name, source_nodes, target_nodes in zip(["n2n", "n2a", "a2n"], [nodes_ex, nodes_ex, nodes_astro], [nodes_ex, nodes_astro, nodes_ex]):
         n_hist_tmp = n_hist if isinstance(n_hist, int) else len(target_nodes)
         conns = nest.GetConnections(source_nodes, target_nodes[:n_hist_tmp])
+        sources = conns.get("source")
         targets = conns.get("target")
+        with open(f"{save_path}/{conn_name}_source.pkl", "wb") as f:
+            pickle.dump(sources, f)
+        with open(f"{save_path}/{conn_name}_target.pkl", "wb") as f:
+            pickle.dump(targets, f)
         plots.plot_conn_hist(
-            targets, subject=conn_name, save_path=model,
+            targets, subject=conn_name, save_path=save_path,
             xlabel=f"Number of {conn_name} connections per target",
             ylabel="Number of cases", title="Bernoulli")
 
@@ -296,7 +302,7 @@ def run():
 
     # plot connections
     # when on PC, USE ONLY WHEN THE MODEL IS SMALL!
-    # plot_conn_distr(nodes_ex, nodes_astro)
+    plot_conn_distr(nodes_ex, nodes_astro, path_name)
 
 ###############################################################################
 # Run the script.
@@ -314,3 +320,6 @@ if __name__ == "__main__":
     # record output; only for debugging
     sys.stdout = orig_stdout
     f.close()
+
+    # copy slurm output files
+    os.system(f"cp *{sys.argv[3]}* {path_name}")
