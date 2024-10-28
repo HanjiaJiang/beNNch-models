@@ -21,12 +21,12 @@ nvp = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else os.cp
 params = {
     'model': model,            # model name and data path
     'nvp': nvp,                # total number of virtual processes
-    'scale': 1,                # scaling factor of the network size
+    'scale': 4,                # scaling factor of the network size
     'simtime': 10000,          # total simulation time in ms
     'presimtime': 1000,        # simulation time until reaching equilibrium
     'dt': 0.1,                 # simulation step
     'rng_seed': 1,             # random number generator seed
-    'pool_size': 10,
+    'pool_size': 10000,
     'pool_type': 'random',
 }
 
@@ -120,20 +120,20 @@ def calc_synchrony(neuron_spikes, n_neurons, start, end, binwidth=10):
 ###############################################################################
 # This function plots the connections between neurons and astrocytes.
 
-def plot_conn_distr(nodes_ex, nodes_astro, save_path, n_hist=None):
-    for conn_name, source_nodes, target_nodes in zip(["n2n", "n2a", "a2n"], [nodes_ex, nodes_ex, nodes_astro], [nodes_ex, nodes_astro, nodes_ex]):
+def collect_conns(nodes_ex, nodes_in, nodes_astro, save_path, n_hist=None):
+    for conn_name, source_nodes, target_nodes in zip(["n2n", "n2a", "a2n"], [nodes_ex+nodes_in, nodes_ex+nodes_in, nodes_astro], [nodes_ex+nodes_in, nodes_astro, nodes_ex+nodes_in]):
         n_hist_tmp = n_hist if isinstance(n_hist, int) else len(target_nodes)
         conns = nest.GetConnections(source_nodes, target_nodes[:n_hist_tmp])
         sources = conns.get("source")
         targets = conns.get("target")
-        with open(f"{save_path}/{conn_name}_source.pkl", "wb") as f:
+        with open(f"{save_path}/conn_{conn_name}_source.pkl", "wb") as f:
             pickle.dump(sources, f)
-        with open(f"{save_path}/{conn_name}_target.pkl", "wb") as f:
+        with open(f"{save_path}/conn_{conn_name}_target.pkl", "wb") as f:
             pickle.dump(targets, f)
-        plots.plot_conn_hist(
-            targets, subject=conn_name, save_path=save_path,
-            xlabel=f"Number of {conn_name} connections per target",
-            ylabel="Number of cases", title="Bernoulli")
+        #plots.plot_conn_hist(
+        #    targets, subject=conn_name, save_path=save_path,
+        #    xlabel=f"Number of {conn_name} connections per target",
+        #    ylabel="Number of cases", title="Bernoulli")
 
 ###############################################################################
 # This function updates the model parameters.
@@ -300,9 +300,9 @@ def run():
     df = pd.DataFrame(data)
     df.to_csv(f"{path_name}/{path_name}.csv", index=False)
 
-    # plot connections
+    # collect connections
     # when on PC, USE ONLY WHEN THE MODEL IS SMALL!
-    plot_conn_distr(nodes_ex, nodes_astro, path_name)
+    collect_conns(nodes_ex, nodes_in, nodes_astro, path_name)
 
 ###############################################################################
 # Run the script.
