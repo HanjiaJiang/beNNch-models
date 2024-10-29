@@ -66,7 +66,9 @@ def conn_num_distr(slist, tlist, save_path, subject, figsize,
         bins = list(range(min(arr_cnt)-1, max(arr_cnt)+1))
     else:
         bins = list(range(min(arr_cnt)-1, min(arr_cnt)+21))
-    plt.hist(arr_cnt, bins, color='k')
+    # verify counts
+    print(np.histogram(arr_cnt, bins=(list(range(100)))))
+    plt.hist(arr_cnt, bins, color='k', ec='k')
     if xlabel:
         plt.xlabel(f"Number of connections per\n{source_name}-{target_name} pair")
     if ylabel:
@@ -106,7 +108,7 @@ def conn_target_distr(sources, targets, save_path, subject, figsize,
         bins = list(range(min(arr_cnt)-1, max(arr_cnt)+1))
     else:
         bins = list(range(min(arr_cnt)-1, min(arr_cnt)+21))
-    plt.hist(arr_cnt, bins, color='k')
+    plt.hist(arr_cnt, bins, color='k', ec='k')
     if xlabel:
         plt.xlabel(f"Number of connected {source_name}\nper {target_name}")
     if ylabel:
@@ -146,7 +148,9 @@ def conn_source_distr(sources, targets, save_path, subject, figsize,
         bins = list(range(min(arr_cnt)-1, max(arr_cnt)+1))
     else:
         bins = list(range(min(arr_cnt)-1, min(arr_cnt)+21))
-    plt.hist(arr_cnt, bins, color='k')
+    # verify counts
+    # print(np.histogram(arr_cnt, bins=(list(range(100)))))
+    plt.hist(arr_cnt, bins, color='k', ec='k')
     if xlabel:
         plt.xlabel(f"Number of connected {source_name}\nper {target_name}")
     if ylabel:
@@ -172,9 +176,25 @@ def show_conn_distr(save_path, n=100, n_mpi=6, figsize=(2.5, 1.75)):
             targets = pickle.load(f)
         if conn_name == "a2n":
             ax_position = [0.42, 0.2, 0.5, 0.7]
-            conn_source_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position)
-            conn_target_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position)
-            conn_num_distr(sources, targets, save_path, conn_name, figsize=figsize, ax_position=ax_position)
+            if "bernoulli10_" in save_path:
+                xlims1 = (0, 100)
+                xlims2 = (0, 200)
+                xlims3 = (0, 75)
+            elif "bernoulli100_" in save_path:
+                xlims1 = (0, 200)
+                xlims2 = (0, 200)
+                xlims3 = (0, 20)
+            elif "bernoulli1000_" in save_path:
+                xlims1 = (0, 500)
+                xlims2 = (0, 500)
+                xlims3 = (0, 20)
+            else:
+                xlims1 = (0, 500)
+                xlims2 = (0, 500)
+                xlims3 = (0, 20)
+            conn_source_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position, xlims=xlims1)
+            conn_target_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position, xlims=xlims2)
+            conn_num_distr(sources, targets, save_path, conn_name, figsize=figsize, ax_position=ax_position, xlims=xlims3)
 
         # plot links
         data = np.array([sources[::int(len(sources)/n)], targets[::int(len(sources)/n)]])
