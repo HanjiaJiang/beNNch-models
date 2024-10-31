@@ -67,7 +67,7 @@ def conn_num_distr(slist, tlist, save_path, subject, figsize,
     else:
         bins = list(range(min(arr_cnt)-1, min(arr_cnt)+21))
     # verify counts
-    print(np.histogram(arr_cnt, bins=(list(range(100)))))
+    # print(np.histogram(arr_cnt, bins=(list(range(100)))))
     plt.hist(arr_cnt, bins, color='k', ec='k')
     if xlabel:
         plt.xlabel(f"Number of connections per\n{source_name}-{target_name} pair")
@@ -178,7 +178,7 @@ def show_conn_distr(save_path, n=100, n_mpi=6, figsize=(2.5, 1.75)):
             ax_position = [0.42, 0.2, 0.5, 0.7]
             if "bernoulli10_" in save_path:
                 xlims1 = (0, 100)
-                xlims2 = (0, 200)
+                xlims2 = (0, 100)
                 xlims3 = (0, 75)
             elif "bernoulli100_" in save_path:
                 xlims1 = (0, 200)
