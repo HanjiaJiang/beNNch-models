@@ -21,6 +21,46 @@ def count_arr(df, n_mpi):
             cnt_arr[i, j] = len(df[(df["source"]%n_mpi==i)&(df["target"]%n_mpi==j)])
     return cnt_arr
 
+def conn_per_target(tlist, save_path, subject, figsize,
+    source_name="astrocyte", target_name="neuron",
+    xlabel=False, ylabel=False, xlims=(250, 550), ax_position=None):
+    print("conn_per_target()...")
+    fname = f"conn_per_target_{subject}"
+    if os.path.isfile(f"{save_path}/{fname}.pkl"):
+        with open(f"{save_path}/{fname}.pkl", "rb") as f:
+            arr_cnt = pickle.load(f)
+    else:
+        arr_cnt = []
+        print(len(set(tlist)))
+        targets = np.array(tlist)
+        for i, target in enumerate(list(set(tlist))):
+            if i%10000 == 0:
+                print(i)
+            arr_cnt.append(np.count_nonzero(targets==target))
+        with open(f"{save_path}/{fname}.pkl", "wb") as f:
+            pickle.dump(arr_cnt, f)
+    fig = plt.figure(figsize=figsize)
+    if max(arr_cnt) - min(arr_cnt) > 20:
+        bins = list(range(min(arr_cnt)-1, max(arr_cnt)+1))
+    else:
+        bins = list(range(min(arr_cnt)-1, min(arr_cnt)+21))
+    # verify counts
+    # print(np.histogram(arr_cnt, bins=(list(range(100)))))
+    plt.hist(arr_cnt, bins, color='k', ec='k')
+    if xlabel:
+        plt.xlabel(f"Number of\n{source_name}-{target_name} connections\nper {target_name}")
+    if ylabel:
+        plt.ylabel("Number of\ncases", labelpad=0)
+    plt.xlim(xlims)
+    if isinstance(ax_position, list):
+        ax = plt.gca()
+        ax.set_position(ax_position)
+    else:
+        plt.tight_layout()
+    plt.savefig(f'{save_path}/{fname}.eps', dpi=400)
+    plt.savefig(f'{save_path}/{fname}.png', dpi=400)
+    plt.close()
+
 # first 100 astrocytes
 def conn_num_distr(slist, tlist, save_path, subject, figsize,
     source_name="astrocyte", target_name="neuron", n_sample=100,
@@ -195,6 +235,7 @@ def show_conn_distr(save_path, n=100, n_mpi=6, figsize=(2.5, 1.75)):
             conn_source_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position, xlims=xlims1)
             conn_target_distr(sources, targets, save_path, conn_name, figsize, ax_position=ax_position, xlims=xlims2)
             conn_num_distr(sources, targets, save_path, conn_name, figsize=figsize, ax_position=ax_position, xlims=xlims3)
+            conn_per_target(targets, save_path, conn_name, figsize=figsize, ax_position=ax_position)
 
         # plot links
         data = np.array([sources[::int(len(sources)/n)], targets[::int(len(sources)/n)]])
